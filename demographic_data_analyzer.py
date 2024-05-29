@@ -3,27 +3,60 @@ import pandas as pd
 
 def calculate_demographic_data(print_data=True):
     # Read data from file
-    df = None
+    df = pd.read_csv("adult.data.csv")
 
     # How many of each race are represented in this dataset? This should be a Pandas series with race names as the index labels.
-    race_count = None
+    race = df['race']
+    count_of_race = []
+
+    race_types = list(df.groupby('race').groups.keys())
+    race_dict = dict(df.groupby('race').groups)
+
+    for i in race_dict:
+        count_of_race.append(len(race_dict[i]))
+    race_count = pd.Series(data = count_of_race, index = race_types)
 
     # What is the average age of men?
-    average_age_men = None
+    male = df[df['sex'] == 'Male']
+    average_age_men = round(male['age'].mean(), 1)
 
     # What is the percentage of people who have a Bachelor's degree?
-    percentage_bachelors = None
+    bachelors = df[df['education'] == 'Bachelors']
+    percentage_bachelors = round(len(bachelors.index)/len(df.index) * 100, 1)
 
     # What percentage of people with advanced education (`Bachelors`, `Masters`, or `Doctorate`) make more than 50K?
     # What percentage of people without advanced education make more than 50K?
 
     # with and without `Bachelors`, `Masters`, or `Doctorate`
-    higher_education = None
-    lower_education = None
+    over = df[df['salary'] == '>50K']
+    under = df[df['salary'] == '<=50K']
+
+    over_group = over.groupby('education').groups
+    under_group = under.groupby('education').groups
+
+    higher_education = len(over_group['Bachelors']) + len(over_group['Doctorate']) + len(over_group['Masters'])
+
+    ed_over = []
+    for i in over_group:
+        ed_over.append(len(over_group[i]))
+    total_over = 0
+    for val in ed_over:
+        total_over += val
+    lower_education = total_over - higher_education
+
+    higher_under = len(under_group['Bachelors']) + len(under_group['Doctorate']) + len(under_group['Masters'])
+    
+    ed_under = []
+    for i in under_group:
+        ed_under.append(len(under_group[i]))
+    total_under = 0
+    for val in ed_under:
+        total_under += val
+    lower_under = total_under - higher_under
 
     # percentage with salary >50K
-    higher_education_rich = None
-    lower_education_rich = None
+    higher_education_rich = round(higher_education/(higher_education + higher_under) * 100, 1)
+    lower_education_rich = round(lower_education/(lower_education + lower_under) * 100, 1)
 
     # What is the minimum number of hours a person works per week (hours-per-week feature)?
     min_work_hours = None
